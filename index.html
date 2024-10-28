@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nostr Profile Viewer</title>
+    <script src="https://www.unpkg.com/nostr-login@latest/dist/unpkg.js"></script>
+</head>
+<body>
+    <h1>Welcome to Nostr Profile Viewer</h1>
+    <button id="loginButton">Login with Nostr</button>
+    <div id="userProfile" style="display:none;">
+        <h2>User Profile</h2>
+        <p id="userPublicKey"></p>
+        <p id="userName"></p>
+        <h3>Relevant NIPs</h3>
+        <ul id="relevantNIPs"></ul>
+    </div>
+
+    <script>
+        // Add click event to the login button
+        document.getElementById('loginButton').addEventListener('click', async () => {
+            if (window.nostr) {
+                // Get user's public key
+                const publicKey = await window.nostr.getPublicKey();
+                console.log(`Logged in with public key: ${publicKey}`);
+                
+                // Fetch the profile data from Nostr using the public key
+                const profile = await fetch(`https://nostr-api.example.com/profiles/${publicKey}`)
+                    .then(response => response.json())
+                    .catch(error => console.error('Error fetching profile:', error));
+                
+                // Show user profile
+                document.getElementById('userProfile').style.display = 'block';
+                document.getElementById('userPublicKey').textContent = `Public Key: ${profile.publicKey}`;
+                document.getElementById('userName').textContent = `Username: ${profile.name}`;
+                
+                // Fetch relevant NIPs
+                const relevantNIPs = await fetch(`https://nostr-api.example.com/nips/${publicKey}`)
+                    .then(response => response.json())
+                    .catch(error => console.error('Error fetching NIPs:', error));
+                
+                // Display relevant NIPs
+                const nipsList = document.getElementById('relevantNIPs');
+                relevantNIPs.forEach(nip => {
+                    const li = document.createElement('li');
+                    li.textContent = nip.title;
+                    nipsList.appendChild(li);
+                });
+            } else {
+                alert('Nostr extension not found! Please install a Nostr browser extension like nos2x or Nostore.');
+            }
+        });
+    </script>
+</body>
+</html>
